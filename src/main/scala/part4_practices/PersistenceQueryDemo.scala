@@ -23,9 +23,10 @@ object PersistenceQueryDemo extends App {
 
   // boilerplate so far
   implicit val materializer = ActorMaterializer()(system)
-//  persistenceIds.runForeach { persistenceId =>
-//    println(s"Found persistence ID: $persistenceId")
-//  }
+  persistenceIds.runForeach { persistenceId =>
+    println(s"Found persistence ID: $persistenceId")
+  }
+
 
   class SimplePersistentActor extends PersistentActor with ActorLogging {
     override def persistenceId: String = "persistence-query-id-1"
@@ -43,17 +44,20 @@ object PersistenceQueryDemo extends App {
 
   val simpleActor = system.actorOf(Props[SimplePersistentActor], "simplePersistentActor")
 
+  val message1 = "hello a first time"
+  //simpleActor ! message1
+
   import system.dispatcher
 //  system.scheduler.scheduleOnce(5 seconds) {
-//    val message = "hello a second time"
-//    simpleActor ! message
+//    val message2 = "hello a second time"
+//    simpleActor ! message2
 //  }
 
   // events by persistence ID
-  val events = readJournal.eventsByPersistenceId("persistence-query-id-1", 0, Long.MaxValue)
-  events.runForeach { event =>
-    println(s"Read event: $event")
-  }
+//  val events = readJournal.eventsByPersistenceId("persistence-query-id-1", 0, Long.MaxValue)
+//  events.runForeach { event =>
+//    println(s"Read event: $event")
+//  }
 
   // events by tags
   val genres = Array("pop", "rock", "hip-hop", "jazz", "disco")
@@ -96,18 +100,18 @@ object PersistenceQueryDemo extends App {
 
   val checkoutActor = system.actorOf(Props[MusicStoreCheckoutActor], "musicStoreActor")
 
-  val r = new Random
-  for (_ <- 1 to 10) {
-    val maxSongs = r.nextInt(5)
-    val songs = for (i <- 1 to maxSongs) yield {
-      val randomGenre = genres(r.nextInt(5))
-      Song(s"Artist $i", s"My Love Song $i", randomGenre)
-    }
+//  val r = new Random
+//  for (_ <- 1 to 10) {
+//    val maxSongs = r.nextInt(5)
+//    val songs = for (i <- 1 to maxSongs) yield {
+//      val randomGenre = genres(r.nextInt(5))
+//      Song(s"Artist $i", s"My Love Song $i", randomGenre)
+//    }
+//
+//    checkoutActor ! Playlist(songs.toList)
+//  }
 
-    checkoutActor ! Playlist(songs.toList)
-  }
-
-  val rockPlaylists = readJournal.eventsByTag("rock", Offset.noOffset)
+  val rockPlaylists = readJournal.eventsByTag("hip-hop", Offset.noOffset)
   rockPlaylists.runForeach { event =>
     println(s"Found a playlist with a rock song: $event")
   }
